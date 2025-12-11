@@ -477,7 +477,7 @@ void GetBasketInfo(string sym, ulong magic,
    datetime lastTime = 0;
 
    int total = PositionsTotal();
-   for(int i=0; i<total; i++)
+   for(int i = 0; i < total; i++)
      {
       if(!PositionSelectByIndex(i))
          continue;
@@ -565,7 +565,7 @@ void CloseAllBasket(string sym, string reason)
    trade.SetExpertMagicNumber(InpMagic);
 
    int total = PositionsTotal();
-   for(int i=total-1; i>=0; i--)
+   for(int i = total - 1; i >= 0; i--)
      {
       if(!PositionSelectByIndex(i))
          continue;
