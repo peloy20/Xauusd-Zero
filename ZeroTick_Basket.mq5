@@ -479,19 +479,20 @@ void GetBasketInfo(string sym, ulong magic,
    int total = PositionsTotal();
    for(int i=0; i<total; i++)
      {
-      if(!PositionGetTicket(i))
+      if(!PositionSelectByIndex(i))
          continue;
 
-      string psym = PositionGetString(POSITION_SYMBOL);
-      long   pmag = PositionGetInteger(POSITION_MAGIC);
-      if(psym != sym || pmag != (long)magic)
+      ulong  ticket = PositionGetInteger(POSITION_TICKET);
+      string psym   = PositionGetString(POSITION_SYMBOL);
+      long   pmag   = PositionGetInteger(POSITION_MAGIC);
+      if(ticket==0 || psym != sym || pmag != (long)magic)
          continue;
 
-      double vol   = PositionGetDouble(POSITION_VOLUME);
-      double pOpen = PositionGetDouble(POSITION_PRICE_OPEN);
-      double prof  = PositionGetDouble(POSITION_PROFIT);
-      long   pType = PositionGetInteger(POSITION_TYPE);
-      datetime t   = (datetime)PositionGetInteger(POSITION_TIME);
+      double   vol   = PositionGetDouble(POSITION_VOLUME);
+      double   pOpen = PositionGetDouble(POSITION_PRICE_OPEN);
+      double   prof  = PositionGetDouble(POSITION_PROFIT);
+      long     pType = PositionGetInteger(POSITION_TYPE);
+      datetime t     = (datetime)PositionGetInteger(POSITION_TIME);
 
       count++;
       totalProfit += prof;
@@ -566,7 +567,7 @@ void CloseAllBasket(string sym, string reason)
    int total = PositionsTotal();
    for(int i=total-1; i>=0; i--)
      {
-      if(!PositionGetTicket(i))
+      if(!PositionSelectByIndex(i))
          continue;
 
       string psym = PositionGetString(POSITION_SYMBOL);
@@ -574,19 +575,11 @@ void CloseAllBasket(string sym, string reason)
       if(psym != sym || pmag != (long)InpMagic)
          continue;
 
-      ulong  ticket = PositionGetInteger(POSITION_TICKET);
-      long   pType  = PositionGetInteger(POSITION_TYPE);
-      double vol    = PositionGetDouble(POSITION_VOLUME);
-
-      MqlTick tick;
-      if(!SymbolInfoTick(sym, tick))
+      ulong ticket = PositionGetInteger(POSITION_TICKET);
+      if(ticket==0)
          continue;
 
-      bool closed = false;
-      if(pType == POSITION_TYPE_BUY)
-         closed = trade.PositionClose(ticket, vol, tick.bid, 5);
-      else if(pType == POSITION_TYPE_SELL)
-         closed = trade.PositionClose(ticket, vol, tick.ask, 5);
+      bool closed = trade.PositionClose(ticket);
 
       if(closed)
          Print("Close basket ticket=", ticket, " reason=", reason);
