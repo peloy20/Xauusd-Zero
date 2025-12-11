@@ -333,14 +333,14 @@ bool CheckOrderflow(string sym, bool isBuy)
    if(Bars(sym, InpTF) <= needBars)
       return(true);
 
-   double vol[];
+   long vol[];
    if(CopyTickVolume(sym, InpTF, 0, needBars, vol) < needBars)
       return(true);
 
-   double currentVol = vol[0];
+   double currentVol = (double)vol[0];
    double sum = 0.0;
    for(int i=1; i<needBars; i++)
-      sum += vol[i];
+      sum += (double)vol[i];
 
    double avg = sum / (needBars-1);
    if(avg <= 0) return(true);
