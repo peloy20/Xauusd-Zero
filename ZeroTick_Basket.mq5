@@ -467,25 +467,24 @@ void GetBasketInfo(string sym, ulong magic,
                    int &count, double &totalProfit, double &totalVolume,
                    double &avgPrice, long &direction, double &lastEntryPrice)
   {
-   count = 0;
-   totalProfit = 0.0;
-   totalVolume = 0.0;
-   avgPrice = 0.0;
-   direction = -1;
+   count          = 0;
+   totalProfit    = 0.0;
+   totalVolume    = 0.0;
+   avgPrice       = 0.0;
+   direction      = -1;
    lastEntryPrice = 0.0;
 
    datetime lastTime = 0;
 
    int total = PositionsTotal();
-   for(int i=0; i<total; i++)
+   for(int i = 0; i < total; i++)
      {
-      if(!PositionSelectByIndex(i))
+      if(!PositionGetTicket(i))
          continue;
 
-      ulong  ticket = PositionGetInteger(POSITION_TICKET);
-      string psym   = PositionGetString(POSITION_SYMBOL);
-      long   pmag   = PositionGetInteger(POSITION_MAGIC);
-      if(ticket==0 || psym != sym || pmag != (long)magic)
+      string psym = PositionGetString(POSITION_SYMBOL);
+      long   pmag = PositionGetInteger(POSITION_MAGIC);
+      if(psym != sym || pmag != (long)magic)
          continue;
 
       double   vol   = PositionGetDouble(POSITION_VOLUME);
@@ -502,7 +501,7 @@ void GetBasketInfo(string sym, ulong magic,
 
       if(t > lastTime)
         {
-         lastTime = t;
+         lastTime       = t;
          lastEntryPrice = pOpen;
         }
      }
@@ -565,9 +564,9 @@ void CloseAllBasket(string sym, string reason)
    trade.SetExpertMagicNumber(InpMagic);
 
    int total = PositionsTotal();
-   for(int i=total-1; i>=0; i--)
+   for(int i = total - 1; i >= 0; i--)
      {
-      if(!PositionSelectByIndex(i))
+      if(!PositionGetTicket(i))
          continue;
 
       string psym = PositionGetString(POSITION_SYMBOL);
@@ -575,11 +574,19 @@ void CloseAllBasket(string sym, string reason)
       if(psym != sym || pmag != (long)InpMagic)
          continue;
 
-      ulong ticket = PositionGetInteger(POSITION_TICKET);
-      if(ticket==0)
+      ulong  ticket = PositionGetInteger(POSITION_TICKET);
+      long   pType  = PositionGetInteger(POSITION_TYPE);
+      double vol    = PositionGetDouble(POSITION_VOLUME);
+
+      MqlTick tick;
+      if(!SymbolInfoTick(sym, tick))
          continue;
 
-      bool closed = trade.PositionClose(ticket);
+      bool closed = false;
+      if(pType == POSITION_TYPE_BUY)
+         closed = trade.PositionClose(ticket, vol, tick.bid, 5);
+      else if(pType == POSITION_TYPE_SELL)
+         closed = trade.PositionClose(ticket, vol, tick.ask, 5);
 
       if(closed)
          Print("Close basket ticket=", ticket, " reason=", reason);
